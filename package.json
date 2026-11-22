@@ -1,0 +1,11 @@
+{
+  "name": "document-ai-assistant",
+  "version": "1.0.0",
+  "description": "Lernprojekt: Lokale Dokumente mit Node.js einlesen und Fragen zu ihrem Inhalt mit Ollama beantworten.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs"
+}
