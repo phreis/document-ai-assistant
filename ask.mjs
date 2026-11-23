@@ -1,7 +1,7 @@
 import { loadDocuments } from './documents.mjs';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { searchChunks } from './search.mjs';
+import { createIndex, searchSemantic } from './semantic-search.mjs';
 import { createChunks } from './chunks.mjs';
 
 const model = 'qwen3:1.7b';
@@ -17,7 +17,10 @@ try {
     'Eingelesene Dateien:',
     documents.map((document) => document.name).join(', '),
   );
+  const chunks = createChunks(documents);
+  console.log('Embeddings für die Dokumentabschnitte erstellen …');
 
+  const searchIndex = await createIndex(chunks);
   console.log('Stelle Fragen zum Dokument. Mit "exit" beenden.');
 
   while (true) {
@@ -31,22 +34,19 @@ try {
       console.log('Bitte gib eine Frage ein.');
       continue;
     }
-    const chunks = createChunks(documents);
-    const selectedChunks = searchChunks(question, chunks);
+
+    console.log(`${searchIndex.length} Abschnitte für die Suche vorbereitet.`);
+    const selectedChunks = await searchSemantic(question, searchIndex);
 
     if (selectedChunks.length === 0) {
-      console.log(
-        '\nKeine passenden Abschnitte mit der Stichwortsuche gefunden.',
-      );
+      console.log('\nKeine Abschnitte für die Suche vorhanden.');
       continue;
     }
 
     console.log('\nAusgewählte Abschnitte:');
 
     for (const chunk of selectedChunks) {
-      console.log(
-        `- ${chunk.id} | Punkte: ${chunk.score} | Treffer: ${chunk.matchedWords.join(', ')}`,
-      );
+      console.log(`- ${chunk.id} | Ähnlichkeit: ${chunk.score.toFixed(3)}`);
     }
 
     const documentText = selectedChunks
